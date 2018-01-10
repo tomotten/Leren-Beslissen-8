@@ -9,6 +9,7 @@ import re
 """
 install Xgboost
 conda install -c conda-forge xgboost
+https://www.lfd.uci.edu/~gohlke/pythonlibs/
 """
 
 def load_file(filename):
@@ -84,7 +85,7 @@ def load_data(filename):
     df.loc[df['AgeGroup']>63, 'AgeGroup'] = 4
     df['AgeGroup'] = df['AgeGroup'].fillna(2)
     df.drop('Age', 1, inplace=True)
-    
+
 
     # Round Fare feature to 2 decimals
     df['Fare'] = df['Fare'].apply(lambda x: round(x,2))
