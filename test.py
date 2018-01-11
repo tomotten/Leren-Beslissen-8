@@ -44,6 +44,11 @@ def get_title(name):
         return title_search.group(1)
     return ""
 
+# Define function to extract deck letter from cabin names
+def get_deck(cabin):
+    if cabin[0].isalpha():
+        return cabin[0]
+    return ''
 
 def load_data(filename):
     # Load data
@@ -79,9 +84,19 @@ def load_data(filename):
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
 
     # Add new feature has_cabin
-
     df['Has_Cabin'] = df['Cabin'].apply(lambda x: 0 if type(x) == float else 1)
+
+    # Add new feature Deck
+    df['Deck'] = df['Cabin'].apply(lambda x: 0 if type(x) == float else x[0])
     df.drop('Cabin', 1, inplace=True)
+    df.loc[df['Deck']=='A', 'Deck'] = 1
+    df.loc[df['Deck']=='B', 'Deck'] = 2
+    df.loc[df['Deck']=='C', 'Deck'] = 3
+    df.loc[df['Deck']=='D', 'Deck'] = 4
+    df.loc[df['Deck']=='E', 'Deck'] = 5
+    df.loc[df['Deck']=='F', 'Deck'] = 6
+    df.loc[df['Deck']=='G', 'Deck'] = 7
+    df.loc[df['Deck']=='T', 'Deck'] = 8
 
     # Add AgeGroups, dividing age into 5 groups
     df['AgeGroup'] = df['Age']
