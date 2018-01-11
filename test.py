@@ -24,7 +24,7 @@ def remove_missing(df, thresh=100):
     columns = list(df)
     l = df.isnull().sum()
     for i, x in enumerate(l):
-        # print(x, columns[i])
+        print(x, columns[i])
         if x > thresh:
             df.drop(columns[i], 1, inplace=True)
         elif x > 0 and x < thresh:  # fill in missing values
@@ -97,6 +97,7 @@ def load_data(filename):
     df.loc[df['Deck']=='F', 'Deck'] = 6
     df.loc[df['Deck']=='G', 'Deck'] = 7
     df.loc[df['Deck']=='T', 'Deck'] = 8
+    df['Deck'] = df['Deck'].apply(pd.to_numeric)
 
     # Add AgeGroups, dividing age into 5 groups
     df['AgeGroup'] = df['Age']
@@ -115,7 +116,7 @@ def load_data(filename):
 
 def output_pred(model, test_data, y_test=None):
     y_pred = model.predict(test_data)
-    predictions = [round(value) for value in y_pred]  # logistic regression
+    predictions = [int(round(value)) for value in y_pred]  # logistic regression
     tmp = pd.DataFrame(predictions ,columns=['Survived'])
     tmp['PassengerId'] = test_data['PassengerId']
     indexes = ['PassengerId', 'Survived']
@@ -126,20 +127,11 @@ def output_pred(model, test_data, y_test=None):
         print("Accuracy: %.2f%%" % (accuracy * 100.0))
     return tmp
 
-
-def compare_csv(path1, path2):
-    corr, tot = 0, 0
-    with open(path1, 'r') as t1, open(path2, 'r') as t2:
-        fileone = t1.readlines()
-        filetwo = t2.readlines()
-    for line in filetwo:
-        tot += 1
-        if line in fileone:
-            corr += 1
-    accuracy = corr / tot
+def check(path1, path2):
+    f1 = load_file(path1)
+    f2 = load_file(path2)
+    accuracy = accuracy_score(f1['Survived'], f2['Survived'])
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
-
-
 
 # Load in train data and split to x and y
 df = load_data('train.csv')
@@ -149,6 +141,7 @@ x, y = split_X_R(df)
 # Load in test data, and clean if needed
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
+print(x)
 
 # Fit model to training data
 # Xgboost Classifier
@@ -163,4 +156,4 @@ res = output_pred(model, test_df)
 filename = 'output.csv'
 res.to_csv(filename, index=False)
 
-compare_csv(filename, 'gender_submission.csv')
+check(filename, 'gender_submission.csv')
