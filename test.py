@@ -10,6 +10,7 @@ import csv
 """
 install Xgboost
 conda install -c conda-forge xgboost
+https://www.lfd.uci.edu/~gohlke/pythonlibs/
 """
 
 def load_file(filename):
