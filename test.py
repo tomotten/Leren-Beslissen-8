@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn import svm
 import re
+import csv
 
 """
 install Xgboost
@@ -18,17 +19,21 @@ def split_X_R(data):
     return data.drop('Survived', 1), data['Survived']
 
 
-def remove_missing(df, thresh=200):
+def remove_missing(df, thresh=100):
     columns = list(df)
     l = df.isnull().sum()
     for i, x in enumerate(l):
+        # print(x, columns[i])
         if x > thresh:
             df.drop(columns[i], 1, inplace=True)
+        elif x > 0 and x < thresh:  # fill in missing values
+            df[columns[i]] = df[columns[i]].fillna(df[columns[i]].mean())
     return df
 
 
 def split_classes(df):
     return df.loc[lambda df: df.Survived == 0, :], df.loc[lambda df: df.Survived == 1, :]
+
 
 # Define function to extract titles from passenger names
 def get_title(name):
@@ -73,9 +78,11 @@ def load_data(filename):
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
 
     # Add new feature has_cabin
+
     df['Has_Cabin'] = df['Cabin'].apply(lambda x: 0 if type(x) == float else 1)
     df.drop('Cabin', 1, inplace=True)
 
+    # Add AgeGroups, dividing age into 5 groups
     df['AgeGroup'] = df['Age']
     df.loc[df['AgeGroup']<=19, 'AgeGroup'] = 0
     df.loc[(df['AgeGroup']>19) & (df['AgeGroup']<=30), 'AgeGroup'] = 1
@@ -84,41 +91,51 @@ def load_data(filename):
     df.loc[df['AgeGroup']>63, 'AgeGroup'] = 4
     df['AgeGroup'] = df['AgeGroup'].fillna(2)
     df.drop('Age', 1, inplace=True)
-    
 
     # Round Fare feature to 2 decimals
     df['Fare'] = df['Fare'].apply(lambda x: round(x,2))
 
     return df
 
-    # df = remove_missing(df)
+def output_pred(model, test_data, y_test=None):
+    y_pred = model.predict(test_data)
+    predictions = [round(value) for value in y_pred]  # logistic regression
+    tmp = pd.DataFrame(predictions ,columns=['Survived'])
+    tmp['PassengerId'] = test_data['PassengerId']
+    indexes = ['PassengerId', 'Survived']
+    tmp = tmp.reindex(columns=indexes)
+    # evaluate predictions
+    if y_test != None:
+        accuracy = accuracy_score(y_test, predictions)
+        print("Accuracy: %.2f%%" % (accuracy * 100.0))
+    return tmp
 
 
+# def compare_csv(path1, path2):
+#     f1 = file(path1, 'r')
+#     f2 = file(path2, 'r')
+#     c1 = csv.reader(f1)
+#     c2 = csv.reader(f2)
+
+
+# Load in train data and split to x and y
 df = load_data('train.csv')
-# x0, x1 = split_classes(df)
 print(df.describe())
-
 x, y = split_X_R(df)
 
-# Split data into train and test sets
-seed = 7
-test_size = 0.33
-X_train, X_test, y_train, y_test = train_test_split(x.values, y.values, test_size=test_size, random_state=seed)
-
+# Load in test data, and clean if needed
+test_df = load_data('test.csv')
+test_df = remove_missing(test_df)
 
 # Fit model to training data
+# Xgboost Classifier
 model = xgb.XGBClassifier()
-model.fit(X_train, y_train)
-clf = svm.SVC(gamma=0.001, C=100.)
-clf.fit(X_train, y_train)
+model.fit(x, y)
 
+# CLF Classifier
+# clf = svm.SVC(gamma=0.001, C=100.)
+# clf.fit(X_train, y_train)
 
-# make predictions for test data
-y_pred = clf.predict(X_train)
-predictions = y_pred
-# predictions = [round(value) for value in y_pred]  # logistic regression
-
-
-# evaluate predictions
-accuracy = accuracy_score(y_train, predictions)
-print("Accuracy: %.2f%%" % (accuracy * 100.0))
+res = output_pred(model, test_df)
+filename = 'output.csv'
+res.to_csv(filename, index=False)
