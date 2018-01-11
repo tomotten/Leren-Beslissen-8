@@ -127,11 +127,18 @@ def output_pred(model, test_data, y_test=None):
     return tmp
 
 
-# def compare_csv(path1, path2):
-#     f1 = file(path1, 'r')
-#     f2 = file(path2, 'r')
-#     c1 = csv.reader(f1)
-#     c2 = csv.reader(f2)
+def compare_csv(path1, path2):
+    corr, tot = 0, 0
+    with open(path1, 'r') as t1, open(path2, 'r') as t2:
+        fileone = t1.readlines()
+        filetwo = t2.readlines()
+    for line in filetwo:
+        tot += 1
+        if line in fileone:
+            corr += 1
+    accuracy = corr / tot
+    print("Accuracy: %.2f%%" % (accuracy * 100.0))
+
 
 
 # Load in train data and split to x and y
@@ -155,3 +162,5 @@ model.fit(x, y)
 res = output_pred(model, test_df)
 filename = 'output.csv'
 res.to_csv(filename, index=False)
+
+compare_csv(filename, 'gender_submission.csv')
