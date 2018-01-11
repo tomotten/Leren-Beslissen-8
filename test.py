@@ -24,7 +24,7 @@ def remove_missing(df, thresh=100):
     columns = list(df)
     l = df.isnull().sum()
     for i, x in enumerate(l):
-        print(x, columns[i])
+        # print(x, columns[i])
         if x > thresh:
             df.drop(columns[i], 1, inplace=True)
         elif x > 0 and x < thresh:  # fill in missing values
@@ -83,11 +83,10 @@ def load_data(filename):
     # Add new feature FamilySize
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
 
-    # Add new feature has_cabin
-    df['Has_Cabin'] = df['Cabin'].apply(lambda x: 0 if type(x) == float else 1)
-
     # Add new feature Deck
-    df['Deck'] = df['Cabin'].apply(lambda x: 0 if type(x) == float else x[0])
+    df['Deck'] = df['Cabin']
+    df['Deck'] = df['Deck'].str.replace('[H-Z]+.*', '8')
+    df['Deck'] = df['Deck'].apply(lambda x: 0 if type(x) == float else x[0])
     df.drop('Cabin', 1, inplace=True)
     df.loc[df['Deck']=='A', 'Deck'] = 1
     df.loc[df['Deck']=='B', 'Deck'] = 2
@@ -96,7 +95,6 @@ def load_data(filename):
     df.loc[df['Deck']=='E', 'Deck'] = 5
     df.loc[df['Deck']=='F', 'Deck'] = 6
     df.loc[df['Deck']=='G', 'Deck'] = 7
-    df.loc[df['Deck']=='T', 'Deck'] = 8
     df['Deck'] = df['Deck'].apply(pd.to_numeric)
 
     # Add AgeGroups, dividing age into 5 groups
@@ -135,13 +133,15 @@ def check(path1, path2):
 
 # Load in train data and split to x and y
 df = load_data('train.csv')
-print(df.describe())
 x, y = split_X_R(df)
+train_x = remove_missing(x)
+
+print(x.describe())
 
 # Load in test data, and clean if needed
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
-print(x)
+print(test_df.describe())
 
 # Fit model to training data
 # Xgboost Classifier
