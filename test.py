@@ -8,6 +8,8 @@ from sklearn import svm
 import re
 import csv
 from data import *
+import warnings # Prevent warnings on windows OS
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 """
 install Xgboost
