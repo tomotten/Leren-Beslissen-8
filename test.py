@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score
+from sklearn.feature_selection import RFECV
 from sklearn import svm
 import re
 import csv
@@ -44,11 +45,6 @@ def get_title(name):
         return title_search.group(1)
     return ""
 
-# Define function to extract deck letter from cabin names
-def get_deck(cabin):
-    if cabin[0].isalpha():
-        return cabin[0]
-    return ''
 
 def load_data(filename):
     # Load data
@@ -57,7 +53,7 @@ def load_data(filename):
     # Create a new feature Title, containing the titles of passenger names
     df['Title'] = df['Name'].apply(get_title)
 
-    # Remove name and Ticket features
+    # Remove name, PassengerId and Ticket features
     df.drop('Name', 1, inplace=True)
     df.drop('Ticket', 1, inplace=True)
 
@@ -78,7 +74,15 @@ def load_data(filename):
 
     # Map Embarked to numerical values
     df['Embarked'] = df['Embarked'].fillna('S')
-    df['Embarked'] = df['Embarked'].map({'C': 0, 'S': 1, 'Q': 2})
+    # df['Embarked'] = df['Embarked'].map({'C': 0, 'S': 1, 'Q': 2})
+    df['Embarked_C'] = df['Embarked']
+    df['Embarked_S'] = df['Embarked']
+    df['Embarked_Q'] = df['Embarked']
+
+    df['Embarked_C'] = df['Embarked_C'].apply(lambda x: 1 if x == 'C' else 0)
+    df['Embarked_S'] = df['Embarked_S'].apply(lambda x: 1 if x == 'S' else 0)
+    df['Embarked_Q'] = df['Embarked_Q'].apply(lambda x: 1 if x == 'Q' else 0)
+    df.drop('Embarked', 1, inplace=True)
 
     # Add new feature FamilySize
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
@@ -112,11 +116,11 @@ def load_data(filename):
 
     return df
 
-def output_pred(model, test_data, y_test=None):
+def output_pred(model, test_data, ids, y_test=None):
     y_pred = model.predict(test_data)
     predictions = [int(round(value)) for value in y_pred]  # logistic regression
     tmp = pd.DataFrame(predictions ,columns=['Survived'])
-    tmp['PassengerId'] = test_data['PassengerId']
+    tmp['PassengerId'] = ids
     indexes = ['PassengerId', 'Survived']
     tmp = tmp.reindex(columns=indexes)
     # evaluate predictions
@@ -131,28 +135,36 @@ def check(path1, path2):
     accuracy = accuracy_score(f1['Survived'], f2['Survived'])
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
 
+
 # Load in train data and split to x and y
 df = load_data('train.csv')
 x, y = split_X_R(df)
-train_x = remove_missing(x)
+x = remove_missing(x)
 
 print(x.describe())
 
 # Load in test data, and clean if needed
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
-print(test_df.describe())
+# print(test_df.describe())
 
 # Fit model to training data
 # Xgboost Classifier
 model = xgb.XGBClassifier()
-model.fit(x, y)
+best_col = ['Fare', 'Title', 'Sex', 'AgeGroup', 'Pclass']
+# x = x[best_col]
+model.fit(x.drop('PassengerId',1), y)
+
+scores = cross_val_score(model, x.as_matrix(), y.as_matrix(), cv=100)
+scores = scores*100
+print(scores)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 # CLF Classifier
 # clf = svm.SVC(gamma=0.001, C=100.)
 # clf.fit(X_train, y_train)
 
-res = output_pred(model, test_df)
+res = output_pred(model, test_df.drop('PassengerId', 1), test_df['PassengerId'])
 filename = 'output.csv'
 res.to_csv(filename, index=False)
 
