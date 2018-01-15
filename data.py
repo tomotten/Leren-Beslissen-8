@@ -61,7 +61,10 @@ def load_data(filename):
     df['Title'] = df['Title'].fillna(0)
 
     # Replace text with numerical data
-    df['Sex'] = df['Sex'].map({'female': 0, 'male': 1})
+    #df['Sex'] = df['Sex'].map({'female': 0, 'male': 1})
+    df['Sex'] = df.loc[df['Age']<=18,'Sex'] = 'child'
+    
+    df['Sex'] = df['Sex'].map({'female': 0, 'male': 1, 'child': 2})
 
     # Map Embarked to numerical values
     df['Embarked'] = df['Embarked'].fillna('S')
