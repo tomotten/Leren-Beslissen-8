@@ -90,7 +90,7 @@ def load_data(filename):
     df.loc[df['Deck']=='E', 'Deck'] = 5
     df.loc[df['Deck']=='F', 'Deck'] = 6
     df.loc[df['Deck']=='G', 'Deck'] = 7
-    df['Deck'] = df['Deck'].apply(pd.to_numeric)
+    df['Deck'] = df['Deck'].astype(int)
 
     # Add AgeGroups, dividing age into 5 groups
     df['AgeGroup'] = df['Age']
