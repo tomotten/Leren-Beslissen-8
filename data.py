@@ -61,18 +61,26 @@ def load_data(filename):
     df['Title'] = df['Title'].fillna(0)
 
     # Replace text with numerical data
-    #df['Sex'] = df['Sex'].map({'female': 0, 'male': 1})
     df['Sex'] = df.loc[df['Age']<=18,'Sex'] = 'child'
-    
+
     df['Sex'] = df['Sex'].map({'female': 0, 'male': 1, 'child': 2})
+
+    # Add AgeGroups, dividing age into 5 groups
+    df['AgeGroup'] = df['Age']
+    df.loc[df['AgeGroup']<=18, 'AgeGroup'] = 0
+    df.loc[(df['AgeGroup']>18) & (df['AgeGroup']<=30), 'AgeGroup'] = 1
+    df.loc[(df['AgeGroup']>30) & (df['AgeGroup']<=45), 'AgeGroup'] = 2
+    df.loc[(df['AgeGroup']>45) & (df['AgeGroup']<=63), 'AgeGroup'] = 3
+    df.loc[df['AgeGroup']>63, 'AgeGroup'] = 4
+    df['AgeGroup'] = df['AgeGroup'].fillna(2)
+    df.drop('Age', 1, inplace=True)
+
 
     # Map Embarked to numerical values
     df['Embarked'] = df['Embarked'].fillna('S')
-    # df['Embarked'] = df['Embarked'].map({'C': 0, 'S': 1, 'Q': 2})
     df['Embarked_C'] = df['Embarked']
     df['Embarked_S'] = df['Embarked']
     df['Embarked_Q'] = df['Embarked']
-
     df['Embarked_C'] = df['Embarked_C'].apply(lambda x: 1 if x == 'C' else 0)
     df['Embarked_S'] = df['Embarked_S'].apply(lambda x: 1 if x == 'S' else 0)
     df['Embarked_Q'] = df['Embarked_Q'].apply(lambda x: 1 if x == 'Q' else 0)
@@ -80,6 +88,9 @@ def load_data(filename):
 
     # Add new feature FamilySize
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
+    # Add new feature IsAlone
+    # df['IsAlone'] = df['FamilySize']
+    # df['IsAlone'] = df['IsAlone'].apply(lambda x: 1 if x == 1 else 0)
 
     # Add new feature Deck
     df['Deck'] = df['Cabin']
@@ -95,15 +106,6 @@ def load_data(filename):
     df.loc[df['Deck']=='G', 'Deck'] = 7
     df['Deck'] = df['Deck'].astype(int)
 
-    # Add AgeGroups, dividing age into 5 groups
-    df['AgeGroup'] = df['Age']
-    df.loc[df['AgeGroup']<=19, 'AgeGroup'] = 0
-    df.loc[(df['AgeGroup']>19) & (df['AgeGroup']<=30), 'AgeGroup'] = 1
-    df.loc[(df['AgeGroup']>30) & (df['AgeGroup']<=45), 'AgeGroup'] = 2
-    df.loc[(df['AgeGroup']>45) & (df['AgeGroup']<=63), 'AgeGroup'] = 3
-    df.loc[df['AgeGroup']>63, 'AgeGroup'] = 4
-    df['AgeGroup'] = df['AgeGroup'].fillna(2)
-    df.drop('Age', 1, inplace=True)
 
     # Round Fare feature to 2 decimals
     df['Fare'] = df['Fare'].apply(lambda x: round(x,2))

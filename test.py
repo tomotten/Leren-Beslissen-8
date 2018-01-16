@@ -8,7 +8,12 @@ from sklearn import svm
 import re
 import csv
 from data import *
+import matplotlib.pyplot as plt
+from sklearn import preprocessing
+from sklearn.metrics import f1_score
 import warnings # Prevent warnings on windows OS
+
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 """
@@ -36,35 +41,36 @@ def check(path1, path2):
     accuracy = accuracy_score(f1['Survived'], f2['Survived'])
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
 
+
+
 # Load in train data and split to x and y
 df = load_data('train.csv')
 x, y = split_X_R(df)
 x = remove_missing(x)
+columns = list(x)
 
 print(x.describe())
 
 # Load in test data, and clean if needed
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
-# print(test_df.describe())
+
 
 # Fit model to training data
 # Xgboost Classifier
 model = xgb.XGBClassifier()
-best_col = ['Fare', 'Title', 'Sex', 'AgeGroup', 'Pclass']
-# x = x[best_col]
 model.fit(x.drop('PassengerId',1), y)
 
-scores = cross_val_score(model, x.as_matrix(), y.as_matrix(), cv=100)
+scores = cross_val_score(model, x.as_matrix(), y.as_matrix(), cv=10)
 scores = scores*100
 print(scores)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-# CLF Classifier
-# clf = svm.SVC(gamma=0.001, C=100.)
-# clf.fit(X_train, y_train)
+true_y = load_file('gender_submission.csv')
 
 res = output_pred(model, test_df.drop('PassengerId', 1), test_df['PassengerId'])
+print("F1-score: %0.2f" % (f1_score(true_y['Survived'], res['Survived'])*100))
+
 filename = 'output.csv'
 res.to_csv(filename, index=False)
 
