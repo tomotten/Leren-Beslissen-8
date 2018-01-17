@@ -11,7 +11,7 @@ from data import *
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from sklearn.metrics import f1_score
-from sklearn.ensemble import RandomForestClassifier 
+from sklearn.ensemble import RandomForestClassifier
 import warnings # Prevent warnings on windows OS
 
 
@@ -23,6 +23,7 @@ conda install -c conda-forge xgboost
 https://www.lfd.uci.edu/~gohlke/pythonlibs/
 """
 
+# Output the predictions in the correct format.
 def output_pred(model, test_data, ids, y_test=None):
     y_pred = model.predict(test_data)
     predictions = [int(round(value)) for value in y_pred]  # logistic regression
@@ -36,6 +37,7 @@ def output_pred(model, test_data, ids, y_test=None):
         print("Accuracy: %.2f%%" % (accuracy * 100.0))
     return tmp
 
+# Compare two csv files, and print accuracy.
 def check(path1, path2):
     f1 = load_file(path1)
     f2 = load_file(path2)
@@ -55,22 +57,24 @@ print(x.describe())
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
 
-# Fit model to training data
-# Xgboost Classifier
+# Fit model (Xgboost Classifier) to training data
 model = xgb.XGBClassifier()
 model.fit(x.drop('PassengerId',1), y)
 
+# Calculate and print cross-validation accuracy and std.
 scores = cross_val_score(model, x.as_matrix(), y.as_matrix(), cv=10)
 scores = scores*100
-print(scores)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
+
+# Load in the correct classification for the test data
 true_y = load_file('gender_submission.csv')
 
+# Get the predictions of the model and print the f1-score
 res = output_pred(model, test_df.drop('PassengerId', 1), test_df['PassengerId'])
 print("F1-score: %0.2f" % (f1_score(true_y['Survived'], res['Survived'])*100))
 
+# Save predictions as csv-file and compare to the actual (correct) classifications.
 filename = 'output.csv'
 res.to_csv(filename, index=False)
-
 check(filename, 'gender_submission.csv')

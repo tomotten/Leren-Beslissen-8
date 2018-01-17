@@ -8,16 +8,19 @@ from sklearn import svm
 import re
 import csv
 
+# Read in data file and return as pd.DataFrame
 def load_file(filename):
     return pd.read_csv(filename, delimiter=',')
 
+# Split data into x and y.
 def split_X_R(data):
     return data.drop('Survived', 1), data['Survived']
 
+# Split data into survived and not survived
 def split_classes(df):
     return df.loc[lambda df: df.Survived == 0, :], df.loc[lambda df: df.Survived == 1, :]
 
-
+# Remove feature if more missing values than thresh, else fill in with the median
 def remove_missing(df, thresh=100):
     columns = list(df)
     l = df.isnull().sum()
@@ -29,16 +32,16 @@ def remove_missing(df, thresh=100):
             df[columns[i]] = df[columns[i]].fillna(df[columns[i]].median())
     return df
 
+# Extract Title from name and return it.
 def get_title(name):
     title_search = re.search(' ([A-Za-z]+)\.', name)
-    # If the title exists, extract and return it.
     if title_search:
         return title_search.group(1)
     return ""
 
-
+# Load in and manipulate data, return as pd.DataFrame
 def load_data(filename):
-    # Load data
+    # Load in the data
     df = load_file(filename)
 
     # Create a new feature Title, containing the titles of passenger names
@@ -62,7 +65,6 @@ def load_data(filename):
 
     # Replace text with numerical data
     df['Sex'] = df.loc[df['Age']<=18,'Sex'] = 'child'
-
     df['Sex'] = df['Sex'].map({'female': 0, 'male': 1, 'child': 2})
 
     # Add AgeGroups, dividing age into 5 groups
@@ -75,8 +77,7 @@ def load_data(filename):
     df['AgeGroup'] = df['AgeGroup'].fillna(2)
     df.drop('Age', 1, inplace=True)
 
-
-    # Map Embarked to numerical values
+    # Map Embarked to seperate (dummy) features
     df['Embarked'] = df['Embarked'].fillna('S')
     df['Embarked_C'] = df['Embarked']
     df['Embarked_S'] = df['Embarked']
@@ -89,12 +90,13 @@ def load_data(filename):
     # Add new feature FamilySize
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
 
+    # Fill in missing values for Fare.
     df['Fare'].fillna(df['Fare'].median(), inplace = True)
 
+    # Add new feature Fare_cat
     # df['Fare_cat'] = df['Fare']
     # df['Fare_cat'] = df['Fare_cat'].apply(lambda x: np.floor(np.log10(x + 1)).astype('int'))
     # df.drop('Fare', 1, inplace=True)
-
 
     # Add new feature Deck
     df['Deck'] = df['Cabin']
