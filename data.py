@@ -26,7 +26,7 @@ def remove_missing(df, thresh=100):
         if x > thresh:
             df.drop(columns[i], 1, inplace=True)
         elif x > 0 and x < thresh:  # fill in missing values
-            df[columns[i]] = df[columns[i]].fillna(df[columns[i]].mean())
+            df[columns[i]] = df[columns[i]].fillna(df[columns[i]].median())
     return df
 
 def get_title(name):
@@ -88,9 +88,13 @@ def load_data(filename):
 
     # Add new feature FamilySize
     df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
-    # Add new feature IsAlone
-    # df['IsAlone'] = df['FamilySize']
-    # df['IsAlone'] = df['IsAlone'].apply(lambda x: 1 if x == 1 else 0)
+
+    df['Fare'].fillna(df['Fare'].median(), inplace = True)
+
+    # df['Fare_cat'] = df['Fare']
+    # df['Fare_cat'] = df['Fare_cat'].apply(lambda x: np.floor(np.log10(x + 1)).astype('int'))
+    # df.drop('Fare', 1, inplace=True)
+
 
     # Add new feature Deck
     df['Deck'] = df['Cabin']
@@ -105,9 +109,5 @@ def load_data(filename):
     df.loc[df['Deck']=='F', 'Deck'] = 6
     df.loc[df['Deck']=='G', 'Deck'] = 7
     df['Deck'] = df['Deck'].astype(int)
-
-
-    # Round Fare feature to 2 decimals
-    df['Fare'] = df['Fare'].apply(lambda x: round(x,2))
 
     return df

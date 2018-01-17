@@ -11,6 +11,7 @@ from data import *
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from sklearn.metrics import f1_score
+from sklearn.ensemble import RandomForestClassifier 
 import warnings # Prevent warnings on windows OS
 
 
@@ -42,11 +43,10 @@ def check(path1, path2):
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
 
 
-
 # Load in train data and split to x and y
 df = load_data('train.csv')
 x, y = split_X_R(df)
-x = remove_missing(x)
+# x = remove_missing(x)
 columns = list(x)
 
 print(x.describe())
@@ -54,7 +54,6 @@ print(x.describe())
 # Load in test data, and clean if needed
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
-
 
 # Fit model to training data
 # Xgboost Classifier
