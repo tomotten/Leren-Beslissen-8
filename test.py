@@ -2,26 +2,16 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import accuracy_score
 from sklearn.feature_selection import RFECV
-from sklearn import svm
 import re
 import csv
 from data import *
+from tuning import *
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from sklearn.metrics import f1_score
-from sklearn.ensemble import RandomForestClassifier
 import warnings # Prevent warnings on windows OS
-
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-"""
-install Xgboost
-conda install -c conda-forge xgboost
-https://www.lfd.uci.edu/~gohlke/pythonlibs/
-"""
 
 # Output the predictions in the correct format.
 def output_pred(model, test_data, ids, y_test=None):
@@ -44,11 +34,9 @@ def check(path1, path2):
     accuracy = accuracy_score(f1['Survived'], f2['Survived'])
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
 
-
 # Load in train data and split to x and y
 df = load_data('train.csv')
 x, y = split_X_R(df)
-# x = remove_missing(x)
 columns = list(x)
 
 print(x.describe())
@@ -66,7 +54,6 @@ scores = cross_val_score(model, x.as_matrix(), y.as_matrix(), cv=10)
 scores = scores*100
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-
 # Load in the correct classification for the test data
 true_y = load_file('gender_submission.csv')
 
@@ -78,3 +65,5 @@ print("F1-score: %0.2f" % (f1_score(true_y['Survived'], res['Survived'])*100))
 filename = 'output.csv'
 res.to_csv(filename, index=False)
 check(filename, 'gender_submission.csv')
+
+fit_importance(model,x.drop('PassengerId',1),y)
