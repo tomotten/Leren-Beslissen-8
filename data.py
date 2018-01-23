@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.feature_selection import RFECV
 from sklearn import svm
+import math
 import re
 import csv
 
@@ -31,6 +32,10 @@ def remove_missing(df, thresh=100):
         elif x > 0 and x < thresh:  # fill in missing values
             df[columns[i]] = df[columns[i]].fillna(df[columns[i]].median())
     return df
+
+def validation_split(data, ratio):
+    np.random.shuffle(data)
+    return data[0:math.floor(ratio*len(data))], data[math.floor(ratio*len(data)):len(data)]
 
 # Extract Title from name and return it.
 def get_title(name):
@@ -64,8 +69,9 @@ def load_data(filename):
     df['Title'] = df['Title'].fillna(0)
 
     # Replace text with numerical data
-    df['Sex'] = df.loc[df['Age']<=18,'Sex'] = 'child'
+    df.loc[df['Age']<=18,'Sex'] = 'child'
     df['Sex'] = df['Sex'].map({'female': 0, 'male': 1, 'child': 2})
+
 
     # Add AgeGroups, dividing age into 5 groups
     df['AgeGroup'] = df['Age']
