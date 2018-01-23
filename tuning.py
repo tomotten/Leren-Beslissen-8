@@ -1,7 +1,7 @@
 from sklearn.feature_selection import SelectFromModel
 import xgboost as xgb
 from sklearn.metrics import accuracy_score
-from sklearn.grid_search import GridSearchCV   #Perforing grid search
+#from sklearn.grid_search import GridSearchCV   #Perforing grid search
 
 def fit_importance(model, x, y):
     # Fit model using each importance as a threshold
@@ -22,8 +22,8 @@ def fit_importance(model, x, y):
 
 def find_depth(x,y):
     param_test1 = {
-     'max_depth':list(range(3,10,2)),
-     'min_child_weight':list(range(1,6,2)),
+     'max_depth':list(range(9,10,1)),
+     'min_child_weight':list(range(1,2,1)),
      # 'n_estimators':list(range(10,100,10))
     }
     gsearch1 = GridSearchCV(estimator = xgb.XGBClassifier( learning_rate =0.1, gamma=0, subsample=0.8,
