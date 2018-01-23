@@ -39,14 +39,15 @@ df = load_data('train.csv')
 x, y = split_X_R(df)
 columns = list(x)
 
-print(x.describe())
+# print(x.describe())
 
 # Load in test data, and clean if needed
 test_df = load_data('test.csv')
 test_df = remove_missing(test_df)
 
 # Fit model (Xgboost Classifier) to training data
-model = xgb.XGBClassifier()
+model = xgb.XGBClassifier(max_depth = 4, colsample_bytree = 0.9,
+                          scale_pos_weight = 1)
 model.fit(x.drop('PassengerId',1), y)
 
 # Calculate and print cross-validation accuracy and std.
@@ -66,4 +67,6 @@ filename = 'output.csv'
 res.to_csv(filename, index=False)
 check(filename, 'gender_submission.csv')
 
-fit_importance(model,x.drop('PassengerId',1),y)
+# fit_importance(model,x.drop('PassengerId',1),y)
+#
+# find_depth(x.drop('PassengerId',1),y)
