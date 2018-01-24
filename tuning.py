@@ -5,6 +5,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.grid_search import GridSearchCV
 import pandas as pd
 
+# useful function to find the most important features in the data
+# As found on https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
 def fit_importance(model, x, y):
     # Fit model using each importance as a threshold
     thresholds = sorted(model.feature_importances_)
@@ -22,23 +24,26 @@ def fit_importance(model, x, y):
     	accuracy = accuracy_score(y, predictions)
     	print("Thresh=%.3f, n=%d, Accuracy: %.2f%%" % (thresh, select_X_train.shape[1], accuracy*100.0))
 
+# Function to do cross validation using varying parameters
 def tune_params(train_x, train_y):
-    cv_params = {'max_depth': [5,7,9],
-                 'min_child_weight': [1,3,5],
-                 'n_estimators': [10,12,14,16]}
+    # uncomment lines and add values to test
+    cv_params = {'max_depth': [6,8],
+                 #'min_child_weight': [1,3],
+                 #'n_estimators': [13,14,15],
                  #'colsample_bytree': [.7,0.8,.9],
-                 #'learning_rate': [.005,.01,.015,.02],
-                 #'subsample': [.7,.8,.9]}
-    ind_params = {'learning_rate': 0.01,
+                 #'learning_rate': [.001,.01,.1],
+                 #'subsample': [.5,.6,.7,.8,.9]
+                 }
+    ind_params = {'learning_rate': 0.1,
                   'n_estimators': 14,
-                  'max_depth': 7,
-                  'min_child_weight': 3,
+                  'max_depth': 8,
+                  'min_child_weight': 1,
                   'seed':0, 'subsample': 0.8, 'colsample_bytree': 0.8,
                   'objective': 'binary:logistic'}
     optimized_GBM = GridSearchCV(xgb.XGBClassifier(**ind_params),
                                 cv_params,
-                                scoring = 'accuracy', cv = 50, n_jobs = -1)
-    # Optimize for accuracy since that is the metric used in the Adult Data Set notation
+                                scoring = 'accuracy', cv = 100, n_jobs = -1)
+
     optimized_GBM.fit(train_x, train_y)
     scores = optimized_GBM.grid_scores_
     pdscores = pd.DataFrame(scores)
