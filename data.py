@@ -19,7 +19,7 @@ def split_X_R(data):
 
 # Split data into survived and not survived
 def split_classes(df):
-    return df.loc[lambda df: df.Survived == 0, :], df.loc[lambda df: df.Survived == 1, :]
+    return df.loc[lambda df: df['Survived'] == 0, :], df.loc[lambda df: df['Survived'] == 1, :]
 
 # Remove feature if more missing values than thresh, else fill in with the median
 def remove_missing(df, thresh=100):

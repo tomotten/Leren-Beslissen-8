@@ -60,11 +60,12 @@ columns = list(X)
 N = 100
 accs, f1_scores, tmp = [], [], []
 # Loop for Cross-validation
+ind_params = {'n_estimators': 12,'max_depth': 5,'min_child_weight': 1}#{'learning_rate': 0.01,
 for i in range(N):
     train_x, test_x, train_y, test_y = train_test_split(X, y, test_size=0.1, random_state=i)
 
     # Fit model (Xgboost Classifier) to training data
-    model = xgb.XGBClassifier()
+    model = xgb.XGBClassifier(**ind_params)
     model.fit(train_x.drop('PassengerId',1), train_y)
 
     # Get the predictions of the model and print the f1-score
@@ -82,7 +83,7 @@ ind = math.floor(N/2.0)
 # print("med:", tmp[ind][0], tmp[ind][1])
 
 train_x, test_x, train_y, test_y = train_test_split(X, y, test_size=0.1, random_state=tmp[ind][0])
-model = xgb.XGBClassifier()
+model = xgb.XGBClassifier(**ind_params)
 model.fit(train_x.drop('PassengerId',1), train_y)
 res = output_pred(model, test_x.drop('PassengerId', 1), test_x['PassengerId'])
 wr, good = get_wrongly_classified(res, test_y)
@@ -111,9 +112,9 @@ print("Overall Accuracy: %.2f%%" % (sum(accs) / float(len(accs))))
 print("Overall F1-score: %0.2f" % (sum(f1_scores) / float(len(f1_scores))))
 
 # Save predictions as csv-file and compare to the actual (correct) classifications.
-# test_data = load_data('test.csv')
-# model = xgb.XGBClassifier()
-# model.fit(X.drop('PassengerId',1), y)
-# res = output_pred(model, test_data.drop('PassengerId',1), test_data['PassengerId'])
-# filename = 'output.csv'
-# res.to_csv(filename, index=False)
+test_data = load_data('test.csv')
+model = xgb.XGBClassifier()
+model.fit(X.drop('PassengerId',1), y)
+res = output_pred(model, test_data.drop('PassengerId',1), test_data['PassengerId'])
+filename = 'output.csv'
+res.to_csv(filename, index=False)
