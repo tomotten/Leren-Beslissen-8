@@ -27,9 +27,9 @@ def fit_importance(model, x, y):
 # Function to do cross validation using varying parameters
 def tune_params(train_x, train_y):
     # uncomment lines and add values to test
-    cv_params = {'max_depth': [6,8],
-                 #'min_child_weight': [1,3],
-                 #'n_estimators': [13,14,15],
+    cv_params = {'max_depth': [6,7,8],
+                 'min_child_weight': [2,3,4],
+                 'n_estimators': [13,14,15],
                  #'colsample_bytree': [.7,0.8,.9],
                  #'learning_rate': [.001,.01,.1],
                  #'subsample': [.5,.6,.7,.8,.9]
@@ -47,7 +47,4 @@ def tune_params(train_x, train_y):
     optimized_GBM.fit(train_x, train_y)
     scores = optimized_GBM.grid_scores_
     pdscores = pd.DataFrame(scores)
-    #for i in range(3):
-    #    print(pdscores['parameters'][i], pdscores['mean_validation_score'][i])
-    for item in scores:
-        print(item)
+    print(pdscores.loc[pdscores['mean_validation_score'].idxmax()]['parameters'])
