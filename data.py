@@ -72,7 +72,6 @@ def load_data(filename):
     df.loc[df['Age']<=18,'Sex'] = 'child'
     df['Sex'] = df['Sex'].map({'female': 0, 'male': 1, 'child': 2})
 
-
     # Add AgeGroups, dividing age into 5 groups
     df['AgeGroup'] = df['Age']
     df.loc[df['AgeGroup']<=18, 'AgeGroup'] = 0
@@ -98,11 +97,6 @@ def load_data(filename):
 
     # Fill in missing values for Fare.
     df['Fare'].fillna(df['Fare'].median(), inplace = True)
-
-    # Add new feature Fare_cat
-    # df['Fare_cat'] = df['Fare']
-    # df['Fare_cat'] = df['Fare_cat'].apply(lambda x: np.floor(np.log10(x + 1)).astype('int'))
-    # df.drop('Fare', 1, inplace=True)
 
     # Add new feature Deck
     df['Deck'] = df['Cabin']
